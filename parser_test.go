@@ -529,7 +529,7 @@ func TestEmbedded(t *testing.T) {
 type command struct {
 }
 
-func (c *command) Execute(args []string) error {
+func (c *command) Validate(args []string) error {
 	return nil
 }
 
@@ -540,16 +540,16 @@ func TestCommandHandlerNoCommand(t *testing.T) {
 
 	parser := NewParser(&opts, Default&^PrintErrors)
 
-	var executedCommand Commander
-	var executedArgs []string
+	var ValidatedCommand Commander
+	var ValidatedArgs []string
 
-	executed := false
+	Validated := false
 
 	parser.CommandHandler = func(command Commander, args []string) error {
-		executed = true
+		Validated = true
 
-		executedCommand = command
-		executedArgs = args
+		ValidatedCommand = command
+		ValidatedArgs = args
 
 		return nil
 	}
@@ -560,15 +560,15 @@ func TestCommandHandlerNoCommand(t *testing.T) {
 		t.Fatalf("Unexpected parse error: %s", err)
 	}
 
-	if !executed {
-		t.Errorf("Expected command handler to be executed")
+	if !Validated {
+		t.Errorf("Expected command handler to be Validated")
 	}
 
-	if executedCommand != nil {
-		t.Errorf("Did not exect an executed command")
+	if ValidatedCommand != nil {
+		t.Errorf("Did not exect an Validated command")
 	}
 
-	assertStringArray(t, executedArgs, []string{"arg1", "arg2"})
+	assertStringArray(t, ValidatedArgs, []string{"arg1", "arg2"})
 }
 
 func TestCommandHandler(t *testing.T) {
@@ -580,16 +580,16 @@ func TestCommandHandler(t *testing.T) {
 
 	parser := NewParser(&opts, Default&^PrintErrors)
 
-	var executedCommand Commander
-	var executedArgs []string
+	var ValidatedCommand Commander
+	var ValidatedArgs []string
 
-	executed := false
+	Validated := false
 
 	parser.CommandHandler = func(command Commander, args []string) error {
-		executed = true
+		Validated = true
 
-		executedCommand = command
-		executedArgs = args
+		ValidatedCommand = command
+		ValidatedArgs = args
 
 		return nil
 	}
@@ -600,13 +600,13 @@ func TestCommandHandler(t *testing.T) {
 		t.Fatalf("Unexpected parse error: %s", err)
 	}
 
-	if !executed {
-		t.Errorf("Expected command handler to be executed")
+	if !Validated {
+		t.Errorf("Expected command handler to be Validated")
 	}
 
-	if executedCommand == nil {
-		t.Errorf("Expected command handler to be executed")
+	if ValidatedCommand == nil {
+		t.Errorf("Expected command handler to be Validated")
 	}
 
-	assertStringArray(t, executedArgs, []string{"arg1", "arg2"})
+	assertStringArray(t, ValidatedArgs, []string{"arg1", "arg2"})
 }

@@ -262,18 +262,18 @@ func TestCommandEstimate2(t *testing.T) {
 
 type testCommand struct {
 	G        bool `short:"g"`
-	Executed bool
+	Validated bool
 	EArgs    []string
 }
 
-func (c *testCommand) Execute(args []string) error {
-	c.Executed = true
+func (c *testCommand) Validate(args []string) error {
+	c.Validated = true
 	c.EArgs = args
 
 	return nil
 }
 
-func TestCommandExecute(t *testing.T) {
+func TestCommandValidate(t *testing.T) {
 	var opts = struct {
 		Value bool `short:"v"`
 
@@ -286,8 +286,8 @@ func TestCommandExecute(t *testing.T) {
 		t.Errorf("Expected Value to be true")
 	}
 
-	if !opts.Command.Executed {
-		t.Errorf("Did not execute command")
+	if !opts.Command.Validated {
+		t.Errorf("Did not Validate command")
 	}
 
 	if !opts.Command.G {

@@ -191,7 +191,7 @@ command files should define a go init function which calls AddCommand on
 the global parser.
 
 When parsing ends and there is an active command and that command implements
-the Commander interface, then its Execute method will be run with the
+the Commander interface, then its Validate method will be run with the
 remaining command line arguments.
 
 Command structs can have options which become valid to parse after the
@@ -212,7 +212,7 @@ Completion
 go-flags has builtin support to provide bash completion of flags, commands
 and argument values. To use completion, the binary which uses go-flags
 can be invoked in a special environment to list completion of the current
-command line argument. It should be noted that this `executes` your application,
+command line argument. It should be noted that this `Validates` your application,
 and it is up to the user to make sure there are no negative side effects (for
 example from init functions).
 

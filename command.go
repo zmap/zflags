@@ -8,7 +8,7 @@ import (
 )
 
 // Command represents an application command. Commands can be added to the
-// parser (which itself is a command) and are selected/executed when its name
+// parser (which itself is a command) and are selected/Validated when its name
 // is specified on the command line. The Command type embeds a Group and
 // therefore also carries a set of command specific options.
 type Command struct {
@@ -36,14 +36,14 @@ type Command struct {
 }
 
 // Commander is an interface which can be implemented by any command added in
-// the options. When implemented, the Execute method will be called for the last
+// the options. When implemented, the Validate method will be called for the last
 // specified (sub)command providing the remaining command line arguments.
 type Commander interface {
-	// Execute will be called for the last active (sub)command. The
+	// Validate will be called for the last active (sub)command. The
 	// args argument contains the remaining command line arguments. The
-	// error that Execute returns will be eventually passed out of the
+	// error that Validate returns will be eventually passed out of the
 	// Parse method of the Parser.
-	Execute(args []string) error
+	Validate(args []string) error
 }
 
 // Usage is an interface which can be implemented to show a custom usage string
