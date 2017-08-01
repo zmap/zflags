@@ -423,6 +423,11 @@ func readIni(contents io.Reader, filename string) (*ini, error) {
 				}
 			}
 
+			//add random nonce to avoid collisions
+			for ret.Sections[name] != nil {
+				name = name + "-"
+			}
+
 			sectionname = name
 			section = ret.Sections[name]
 
@@ -502,6 +507,8 @@ func (i *IniParser) parse(ini *ini) error {
 	var quotesLookup = make(map[*Option]bool)
 
 	for name, section := range ini.Sections {
+		name = removeTrailingNonce(name)
+
 		groups := i.matchingGroups(name)
 
 		if len(groups) == 0 {
@@ -586,6 +593,14 @@ func (i *IniParser) parse(ini *ini) error {
 			}
 
 			opt.tag.Set("_read-ini-name", inival.Name)
+
+		}
+
+		if name != "" && name != "Application Options" {
+			c := i.parser.Find(name)
+			if cmd, ok := c.data.(Commander); ok {
+				cmd.Validate([]string{})
+			}
 		}
 	}
 
@@ -594,4 +609,14 @@ func (i *IniParser) parse(ini *ini) error {
 	}
 
 	return nil
+}
+
+func removeTrailingNonce(s string) string {
+	var j int
+	for j = len(s) - 1; j > 0; j-- {
+		if s[j] != '-' {
+			break
+		}
+	}
+	return s[:j+1]
 }
