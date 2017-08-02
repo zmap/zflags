@@ -1,7 +1,11 @@
 go-flags: a go library for parsing command line arguments
 =========================================================
 
-[![GoDoc](https://godoc.org/github.com/jessevdk/go-flags?status.png)](https://godoc.org/github.com/jessevdk/go-flags) [![Build Status](https://travis-ci.org/jessevdk/go-flags.svg?branch=master)](https://travis-ci.org/jessevdk/go-flags) [![Coverage Status](https://img.shields.io/coveralls/jessevdk/go-flags.svg)](https://coveralls.io/r/jessevdk/go-flags?branch=master)
+## zflags modifications
+The following modifications have been added to work with zgrab2:
+* Rename Execute(args []string) in the Commander interface to Validate(args []string)
+* After .ini parsing, Validate will be called on the command in the .ini section headers
+* Collision avoidance for duplicate section header names/commands
 
 This library provides similar functionality to the builtin flag library of
 go, but provides much more functionality and nicer formatting. From the
