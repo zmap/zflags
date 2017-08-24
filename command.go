@@ -46,6 +46,12 @@ type Commander interface {
 	Validate(args []string) error
 }
 
+type ZCommander interface {
+	Validate(args []string) error
+
+	New() interface{}
+}
+
 // Usage is an interface which can be implemented to show a custom usage string
 // in the help message shown for a command.
 type Usage interface {

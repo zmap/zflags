@@ -551,7 +551,6 @@ func (i *IniParser) parse(ini *ini) error {
 			}
 
 			pval := &inival.Value
-
 			if !opt.canArgument() && len(inival.Value) == 0 {
 				pval = nil
 			} else {
@@ -598,8 +597,11 @@ func (i *IniParser) parse(ini *ini) error {
 
 		if name != "" && name != "Application Options" {
 			c := i.parser.Find(name)
-			if cmd, ok := c.data.(Commander); ok {
-				cmd.Validate([]string{})
+			if cmd, ok := c.data.(ZCommander); ok {
+				cmd.Validate([]string{}) //validate and register lookup
+				par, _ := c.parent.(*Command)
+				c.Name = "-"                                                           //remove previous command
+				par.AddCommand(name, c.ShortDescription, c.LongDescription, cmd.New()) //recreate new group with duplicate module
 			}
 		}
 	}
