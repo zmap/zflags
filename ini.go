@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"reflect"
 	"sort"
@@ -598,10 +599,12 @@ func (i *IniParser) parse(ini *ini) error {
 		if name != "" && name != "Application Options" {
 			c := i.parser.Find(name)
 			if cmd, ok := c.data.(ZCommander); ok {
-				cmd.Validate([]string{}) //validate and register lookup
+				if err := cmd.Validate([]string{}); err != nil { //validate
+					log.Fatal(err)
+				}
 				par, _ := c.parent.(*Command)
-				c.Name = "-"                                                           //remove previous command
-				par.AddCommand(name, c.ShortDescription, c.LongDescription, cmd.New()) //recreate new group with duplicate module
+				c.Name = "-"                                                                     //remove previous command
+				par.AddCommand(name, c.ShortDescription, c.LongDescription, c.module.NewFlags()) //recreate new group with duplicate module
 			}
 		}
 	}

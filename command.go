@@ -30,6 +30,8 @@ type Command struct {
 	// Whether positional arguments are required
 	ArgsRequired bool
 
+	module ZModule
+
 	commands            []*Command
 	hasBuiltinHelpGroup bool
 	args                []*Arg
@@ -49,7 +51,11 @@ type Commander interface {
 type ZCommander interface {
 	Validate(args []string) error
 
-	New() interface{}
+	Help() string
+}
+
+type ZModule interface {
+	NewFlags() interface{}
 }
 
 // Usage is an interface which can be implemented to show a custom usage string
@@ -72,8 +78,13 @@ type lookup struct {
 // options are in the command. The provided data can implement the Command and
 // Usage interfaces.
 func (c *Command) AddCommand(command string, shortDescription string, longDescription string, data interface{}) (*Command, error) {
-	cmd := newCommand(command, shortDescription, longDescription, data)
-
+	var cmd *Command
+	if z, ok := data.(ZModule); ok {
+		cmd = newCommand(command, shortDescription, longDescription, z.NewFlags())
+		cmd.module = z
+	} else {
+		cmd = newCommand(command, shortDescription, longDescription, data)
+	}
 	cmd.parent = c
 
 	if err := cmd.scan(); err != nil {

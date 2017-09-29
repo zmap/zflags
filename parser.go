@@ -129,7 +129,7 @@ type parseState struct {
 // settings. The provided data is a pointer to a struct representing the
 // default option group (named "Application Options"). For more control, use
 // flags.NewParser.
-func Parse(data interface{}) ([]string, error) {
+func Parse(data interface{}) ([]string, string, interface{}, error) {
 	return NewParser(data, Default).Parse()
 }
 
@@ -139,8 +139,8 @@ func Parse(data interface{}) ([]string, error) {
 // the list of command line arguments to parse. If you just want to parse the
 // default program command line arguments (i.e. os.Args), then use flags.Parse
 // instead. For more control, use flags.NewParser.
-func ParseArgs(data interface{}, args []string) ([]string, error) {
-	return NewParser(data, Default).ParseArgs(args)
+func ParseArgs(data interface{}, args []string) ([]string, string, interface{}, error) {
+	return NewParser(data, Default).ParseCommandLine(args)
 }
 
 // NewParser creates a new parser. It uses os.Args[0] as the application
@@ -182,11 +182,11 @@ func NewNamedParser(appname string, options Options) *Parser {
 
 // Parse parses the command line arguments from os.Args using Parser.ParseArgs.
 // For more detailed information see ParseArgs.
-func (p *Parser) Parse() ([]string, error) {
-	return p.ParseArgs(os.Args[1:])
+func (p *Parser) Parse() ([]string, string, interface{}, error) {
+	return p.ParseCommandLine(os.Args[1:])
 }
 
-// ParseArgs parses the command line arguments according to the option groups that
+// ParseCommandLine parses the command line arguments according to the option groups that
 // were added to the parser. On successful parsing of the arguments, the
 // remaining, non-option, arguments (if any) are returned. The returned error
 // indicates a parsing error and can be used with PrintError to display
@@ -197,9 +197,9 @@ func (p *Parser) Parse() ([]string, error) {
 // automatically printed if the PrintErrors option is enabled.
 // Furthermore, the special error type ErrHelp is returned.
 // It is up to the caller to exit the program if so desired.
-func (p *Parser) ParseArgs(args []string) ([]string, error) {
+func (p *Parser) ParseCommandLine(args []string) ([]string, string, interface{}, error) {
 	if p.internalError != nil {
-		return nil, p.internalError
+		return nil, "", nil, p.internalError
 	}
 
 	p.eachOption(func(c *Command, g *Group, option *Option) {
@@ -226,7 +226,7 @@ func (p *Parser) ParseArgs(args []string) ([]string, error) {
 			os.Exit(0)
 		}
 
-		return nil, nil
+		return nil, "", nil, nil
 	}
 
 	s := &parseState{
@@ -235,7 +235,6 @@ func (p *Parser) ParseArgs(args []string) ([]string, error) {
 	}
 
 	p.fillParseState(s)
-
 	for !s.eof() {
 		arg := s.pop()
 
@@ -302,7 +301,6 @@ func (p *Parser) ParseArgs(args []string) ([]string, error) {
 
 		s.checkRequired(p)
 	}
-
 	var reterr error
 
 	if s.err != nil {
@@ -328,10 +326,10 @@ func (p *Parser) ParseArgs(args []string) ([]string, error) {
 			retargs = s.args
 		}
 
-		return retargs, p.printError(reterr)
+		return retargs, "", nil, p.printError(reterr)
 	}
-
-	return s.retargs, nil
+	moduleName := s.command.Name
+	return s.retargs, moduleName, s.command.data, nil
 }
 
 func (p *parseState) eof() bool {
