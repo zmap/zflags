@@ -89,7 +89,7 @@ func NewIniParser(p *Parser) *IniParser {
 // settings from an ini formatted file. The provided data is a pointer to a struct
 // representing the default option group (named "Application Options"). For
 // more control, use flags.NewParser.
-func IniParse(filename string, data interface{}) error {
+func IniParse(filename string, data interface{}) ([]string, []interface{}, error) {
 	p := NewParser(data, Default)
 
 	return NewIniParser(p).ParseFile(filename)
@@ -98,11 +98,11 @@ func IniParse(filename string, data interface{}) error {
 // ParseFile parses flags from an ini formatted file. See Parse for more
 // information on the ini file format. The returned errors can be of the type
 // flags.Error or flags.IniError.
-func (i *IniParser) ParseFile(filename string) error {
+func (i *IniParser) ParseFile(filename string) ([]string, []interface{}, error) {
 	ini, err := readIniFromFile(filename)
 
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	return i.parse(ini)
@@ -132,11 +132,11 @@ func (i *IniParser) ParseFile(filename string) error {
 // matched case insensitive.
 //
 // The returned errors can be of the type flags.Error or flags.IniError.
-func (i *IniParser) Parse(reader io.Reader) error {
+func (i *IniParser) Parse(reader io.Reader) ([]string, []interface{}, error) {
 	ini, err := readIni(reader, "")
 
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	return i.parse(ini)
@@ -502,18 +502,20 @@ func (i *IniParser) matchingGroups(name string) []*Group {
 	return nil
 }
 
-func (i *IniParser) parse(ini *ini) error {
+func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 	p := i.parser
 
 	var quotesLookup = make(map[*Option]bool)
 
+	var modTypes []string
+	var returnFlags []interface{}
 	for name, section := range ini.Sections {
 		name = removeTrailingNonce(name)
 
 		groups := i.matchingGroups(name)
 
 		if len(groups) == 0 {
-			return newErrorf(ErrUnknownGroup, "could not find option group `%s'", name)
+			return nil, nil, newErrorf(ErrUnknownGroup, "could not find option group `%s'", name)
 		}
 
 		for _, inival := range section {
@@ -535,7 +537,7 @@ func (i *IniParser) parse(ini *ini) error {
 
 			if opt == nil {
 				if (p.Options & IgnoreUnknown) == None {
-					return &IniError{
+					return nil, nil, &IniError{
 						Message:    fmt.Sprintf("unknown option: %s", inival.Name),
 						File:       ini.File,
 						LineNumber: inival.LineNumber,
@@ -565,7 +567,7 @@ func (i *IniParser) parse(ini *ini) error {
 
 							inival.Quoted = true
 						} else {
-							return &IniError{
+							return nil, nil, &IniError{
 								Message:    err.Error(),
 								File:       ini.File,
 								LineNumber: inival.LineNumber,
@@ -580,7 +582,7 @@ func (i *IniParser) parse(ini *ini) error {
 			}
 
 			if err := opt.set(pval); err != nil {
-				return &IniError{
+				return nil, nil, &IniError{
 					Message:    err.Error(),
 					File:       ini.File,
 					LineNumber: inival.LineNumber,
@@ -602,9 +604,11 @@ func (i *IniParser) parse(ini *ini) error {
 				if err := cmd.Validate([]string{}); err != nil { //validate
 					log.Fatal(err)
 				}
+				modTypes = append(modTypes, name)
+				returnFlags = append(returnFlags, c.data)
 				par, _ := c.parent.(*Command)
-				c.Name = "-"                                                                     //remove previous command
-				par.AddCommand(name, c.ShortDescription, c.LongDescription, c.module.NewFlags()) //recreate new group with duplicate module
+				c.Name = "-"                                                          //remove previous command
+				par.AddCommand(name, c.ShortDescription, c.LongDescription, c.module) //recreate new group with duplicate module
 			}
 		}
 	}
@@ -613,7 +617,7 @@ func (i *IniParser) parse(ini *ini) error {
 		opt.iniQuote = quoted
 	}
 
-	return nil
+	return modTypes, returnFlags, nil
 }
 
 func removeTrailingNonce(s string) string {
