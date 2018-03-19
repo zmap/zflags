@@ -211,7 +211,7 @@ func convert(val string, retval reflect.Value, options multiTag) error {
 			retval.SetBool(b)
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		base, err := getBase(options, 10)
+		base, err := getBase(options, 0)
 
 		if err != nil {
 			return err
@@ -225,7 +225,7 @@ func convert(val string, retval reflect.Value, options multiTag) error {
 
 		retval.SetInt(parsed)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		base, err := getBase(options, 10)
+		base, err := getBase(options, 0)
 
 		if err != nil {
 			return err
