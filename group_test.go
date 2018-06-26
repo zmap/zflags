@@ -47,7 +47,7 @@ func TestGroupAdd(t *testing.T) {
 		return
 	}
 
-	ret, err := p.ParseArgs([]string{"-v", "-g", "rest"})
+	ret, _, _, err := p.ParseCommandLine([]string{"-v", "-g", "rest"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -152,7 +152,7 @@ func TestDuplicateShortFlags(t *testing.T) {
 		"-v", "456",
 	}
 
-	_, err := ParseArgs(&opts, args)
+	_, _, _, err := ParseArgs(&opts, args)
 
 	if err == nil {
 		t.Errorf("Expected an error with type ErrDuplicatedFlag")
@@ -174,7 +174,7 @@ func TestDuplicateLongFlags(t *testing.T) {
 		"--testing",
 	}
 
-	_, err := ParseArgs(&opts, args)
+	_, _, _, err := ParseArgs(&opts, args)
 
 	if err == nil {
 		t.Errorf("Expected an error with type ErrDuplicatedFlag")

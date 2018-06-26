@@ -16,7 +16,7 @@ func TestPositional(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, Default)
-	ret, err := p.ParseArgs([]string{"10", "arg_test.go", "a", "b"})
+	ret, _, _, err := p.ParseCommandLine([]string{"10", "arg_test.go", "a", "b"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -47,7 +47,7 @@ func TestPositionalRequired(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"10"})
+	_, _, _, err := p.ParseCommandLine([]string{"10"})
 
 	assertError(t, err, ErrRequired, "the required argument `Filename` was not provided")
 }
@@ -62,7 +62,7 @@ func TestPositionalRequiredRest1Fail(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{})
+	_, _, _, err := p.ParseCommandLine([]string{})
 
 	assertError(t, err, ErrRequired, "the required argument `Rest (at least 1 argument)` was not provided")
 }
@@ -77,7 +77,7 @@ func TestPositionalRequiredRest1Pass(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"rest1"})
+	_, _, _, err := p.ParseCommandLine([]string{"rest1"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -101,7 +101,7 @@ func TestPositionalRequiredRest2Fail(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"rest1"})
+	_, _, _, err := p.ParseCommandLine([]string{"rest1"})
 
 	assertError(t, err, ErrRequired, "the required argument `Rest (at least 2 arguments, but got only 1)` was not provided")
 }
@@ -116,7 +116,7 @@ func TestPositionalRequiredRest2Pass(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"rest1", "rest2", "rest3"})
+	_, _, _, err := p.ParseCommandLine([]string{"rest1", "rest2", "rest3"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -142,7 +142,7 @@ func TestPositionalRequiredRestRangeFail(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"rest1", "rest2", "rest3"})
+	_, _, _, err := p.ParseCommandLine([]string{"rest1", "rest2", "rest3"})
 
 	assertError(t, err, ErrRequired, "the required argument `Rest (at most 2 arguments, but got 3)` was not provided")
 }
@@ -157,7 +157,7 @@ func TestPositionalRequiredRestRangeEmptyFail(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"some", "thing"})
+	_, _, _, err := p.ParseCommandLine([]string{"some", "thing"})
 
 	assertError(t, err, ErrRequired, "the required argument `Rest (zero arguments)` was not provided")
 }

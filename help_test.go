@@ -71,7 +71,7 @@ func TestHelp(t *testing.T) {
 	p := NewNamedParser("TestHelp", HelpFlag)
 	p.AddGroup("Application Options", "The application options", &opts)
 
-	_, err := p.ParseArgs([]string{"--help"})
+	_, _, _, err := p.ParseCommandLine([]string{"--help"})
 
 	if err == nil {
 		t.Fatalf("Expected help error")
@@ -306,7 +306,7 @@ func TestHelpCommand(t *testing.T) {
 	p := NewNamedParser("TestHelpCommand", HelpFlag)
 	p.AddGroup("Application Options", "The application options", &opts)
 
-	_, err := p.ParseArgs([]string{"command", "--help"})
+	_, _, _, err := p.ParseCommandLine([]string{"command", "--help"})
 
 	if err == nil {
 		t.Fatalf("Expected help error")
@@ -400,7 +400,7 @@ Help Options:
 		p := NewNamedParser("TestHelpDefaults", HelpFlag)
 		p.AddGroup("Application Options", "The application options", &opts)
 
-		_, err := p.ParseArgs(test.Args)
+		_, _, _, err := p.ParseCommandLine(test.Args)
 
 		if err == nil {
 			t.Fatalf("Expected help error")
@@ -426,7 +426,7 @@ func TestHelpRestArgs(t *testing.T) {
 	p := NewNamedParser("TestHelpDefaults", HelpFlag)
 	p.AddGroup("Application Options", "The application options", &opts)
 
-	retargs, err := p.ParseArgs([]string{"-h", "-v", "rest"})
+	retargs, _, _, err := p.ParseCommandLine([]string{"-h", "-v", "rest"})
 
 	if err == nil {
 		t.Fatalf("Expected help error")
@@ -520,7 +520,7 @@ func TestHelpDefaultMask(t *testing.T) {
 
 	for _, test := range tests {
 		p := NewParser(test.opts, HelpFlag)
-		_, err := p.ParseArgs([]string{"-h"})
+		_, _, _, err := p.ParseCommandLine([]string{"-h"})
 		if flagsErr, ok := err.(*Error); ok && flagsErr.Type == ErrHelp {
 			err = nil
 		}

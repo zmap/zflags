@@ -238,7 +238,7 @@ func TestCommandEstimate(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{})
+	_, _, _, err := p.ParseCommandLine([]string{})
 
 	assertError(t, err, ErrCommandRequired, "Please specify one command of: add or remove")
 }
@@ -255,15 +255,15 @@ func TestCommandEstimate2(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, None)
-	_, err := p.ParseArgs([]string{"rmive"})
+	_, _, _, err := p.ParseCommandLine([]string{"rmive"})
 
 	assertError(t, err, ErrUnknownCommand, "Unknown command `rmive', did you mean `remove'?")
 }
 
 type testCommand struct {
-	G        bool `short:"g"`
+	G         bool `short:"g"`
 	Validated bool
-	EArgs    []string
+	EArgs     []string
 }
 
 func (c *testCommand) Validate(args []string) error {
@@ -330,7 +330,7 @@ func TestCommandAdd(t *testing.T) {
 		return
 	}
 
-	ret, err := p.ParseArgs([]string{"-v", "cmd", "-g", "rest"})
+	ret, _, _, err := p.ParseCommandLine([]string{"-v", "cmd", "-g", "rest"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -469,7 +469,7 @@ func TestSubcommandsOptional(t *testing.T) {
 	p := NewParser(&opts, None)
 	p.SubcommandsOptional = true
 
-	_, err := p.ParseArgs([]string{"-v"})
+	_, _, _, err := p.ParseCommandLine([]string{"-v"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -495,7 +495,7 @@ func TestSubcommandsOptionalAfterNonCommand(t *testing.T) {
 	p := NewParser(&opts, None)
 	p.SubcommandsOptional = true
 
-	retargs, err := p.ParseArgs([]string{"nocmd", "remove"})
+	retargs, _, _, err := p.ParseCommandLine([]string{"nocmd", "remove"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)

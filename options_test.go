@@ -10,7 +10,7 @@ func TestPassDoubleDash(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, PassDoubleDash)
-	ret, err := p.ParseArgs([]string{"-v", "--", "-v", "-g"})
+	ret, _, _, err := p.ParseCommandLine([]string{"-v", "--", "-v", "-g"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -30,7 +30,7 @@ func TestPassAfterNonOption(t *testing.T) {
 	}{}
 
 	p := NewParser(&opts, PassAfterNonOption)
-	ret, err := p.ParseArgs([]string{"-v", "arg", "-v", "-g"})
+	ret, _, _, err := p.ParseCommandLine([]string{"-v", "arg", "-v", "-g"})
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
