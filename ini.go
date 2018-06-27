@@ -613,6 +613,18 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 		}
 	}
 
+	// Set any default values.
+	// TODO: Copied from ParseCommandLine in parser.go; it seems like this
+	// TODO: should probably be rolled into a common section.
+	p.eachOption(func(c *Command, g *Group, option *Option) {
+		if option.preventDefault {
+			return
+		}
+
+		option.clearDefault()
+	})
+	// TODO: checkRequired?
+
 	for opt, quoted := range quotesLookup {
 		opt.iniQuote = quoted
 	}
