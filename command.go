@@ -80,10 +80,10 @@ type lookup struct {
 func (c *Command) AddCommand(command string, shortDescription string, longDescription string, data interface{}) (*Command, error) {
 	var cmd *Command
 	if z, ok := data.(ZModule); ok {
-		cmd = newCommand(command, shortDescription, longDescription, z.NewFlags())
+		cmd = newCommand(command, shortDescription, longDescription, z.NewFlags(), c.Group.parser)
 		cmd.module = z
 	} else {
-		cmd = newCommand(command, shortDescription, longDescription, data)
+		cmd = newCommand(command, shortDescription, longDescription, data, c.Group.parser)
 	}
 	cmd.parent = c
 
@@ -99,7 +99,7 @@ func (c *Command) AddCommand(command string, shortDescription string, longDescri
 // data needs to be a pointer to a struct from which the fields indicate which
 // options are in the group.
 func (c *Command) AddGroup(shortDescription string, longDescription string, data interface{}) (*Group, error) {
-	group := newGroup(shortDescription, longDescription, data)
+	group := newGroup(shortDescription, longDescription, data, c.Group.parser)
 
 	group.parent = c
 
@@ -162,9 +162,9 @@ func (c *Command) Args() []*Arg {
 	return ret
 }
 
-func newCommand(name string, shortDescription string, longDescription string, data interface{}) *Command {
+func newCommand(name string, shortDescription string, longDescription string, data interface{}, parser *Parser) *Command {
 	return &Command{
-		Group: newGroup(shortDescription, longDescription, data),
+		Group: newGroup(shortDescription, longDescription, data, parser),
 		Name:  name,
 	}
 }
