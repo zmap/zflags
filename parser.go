@@ -109,6 +109,10 @@ const (
 	// POSIX processing.
 	PassAfterNonOption
 
+	// EnvironmentFallback lets options be read from environment variables
+	// even if they have no `env` tag, by falling back to the `long` value.
+	EnvironmentFallback
+
 	// Default is a convenient default set of options which should cover
 	// most of the uses of the flags package.
 	Default = HelpFlag | PrintErrors | PassDoubleDash
@@ -170,11 +174,10 @@ func NewParser(data interface{}, options Options) *Parser {
 // be added to this parser by using AddGroup and AddCommand.
 func NewNamedParser(appname string, options Options) *Parser {
 	p := &Parser{
-		Command:            newCommand(appname, "", "", nil),
 		Options:            options,
 		NamespaceDelimiter: ".",
 	}
-
+	p.Command = newCommand(appname, "", "", nil, p)
 	p.Command.parent = p
 
 	return p

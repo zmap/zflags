@@ -50,6 +50,8 @@ type Group struct {
 	isBuiltinHelp bool
 
 	data interface{}
+
+	parser *Parser
 }
 
 type scanHandler func(reflect.Value, *reflect.StructField) (bool, error)
@@ -58,7 +60,7 @@ type scanHandler func(reflect.Value, *reflect.StructField) (bool, error)
 // data needs to be a pointer to a struct from which the fields indicate which
 // options are in the group.
 func (g *Group) AddGroup(shortDescription string, longDescription string, data interface{}) (*Group, error) {
-	group := newGroup(shortDescription, longDescription, data)
+	group := newGroup(shortDescription, longDescription, data, g.parser)
 
 	group.parent = g
 
@@ -125,12 +127,13 @@ func (g *Group) FindOptionByShortName(shortName rune) *Option {
 	})
 }
 
-func newGroup(shortDescription string, longDescription string, data interface{}) *Group {
+func newGroup(shortDescription string, longDescription string, data interface{}, parser *Parser) *Group {
 	return &Group{
 		ShortDescription: shortDescription,
 		LongDescription:  longDescription,
 
 		data: data,
+		parser: parser,
 	}
 }
 
@@ -270,12 +273,18 @@ func (g *Group) scanStruct(realval reflect.Value, sfield *reflect.StructField, h
 		choices := mtag.GetMany("choice")
 		hidden := !isStringFalsy(mtag.Get("hidden"))
 
+		envKey := mtag.Get("env")
+
+		if envKey == "" && g.parser != nil && (g.parser.Options & EnvironmentFallback) == EnvironmentFallback {
+			envKey = longname
+		}
+
 		option := &Option{
 			Description:      description,
 			ShortName:        short,
 			LongName:         longname,
 			Default:          def,
-			EnvDefaultKey:    mtag.OptGet("env", longname),
+			EnvDefaultKey:    envKey,
 			EnvDefaultDelim:  mtag.Get("env-delim"),
 			OptionalArgument: optional,
 			OptionalValue:    optionalValue,
