@@ -188,7 +188,10 @@ func convert(val string, retval reflect.Value, options multiTag) error {
 		parsed, err := time.ParseDuration(val)
 
 		if err != nil {
-			return err
+			parsed, err = time.ParseDuration(val + "s")
+			if err != nil {
+				return err
+			}
 		}
 
 		retval.SetInt(int64(parsed))
