@@ -234,6 +234,13 @@ func (g *Group) scanStruct(realval reflect.Value, sfield *reflect.StructField, h
 		longname := mtag.Get("long")
 		shortname := mtag.Get("short")
 
+		// If `long` is not specified, try the JSON key
+		if longname == "" {
+			if j := mtag.Get("json"); j != "" {
+				// key = anything before a comma, if one is present
+				longname = strings.SplitN(j, ",", 2)[0]
+			}
+		}
 		// Need at least either a short or long name
 		if longname == "" && shortname == "" && mtag.Get("ini-name") == "" {
 			continue
@@ -268,7 +275,7 @@ func (g *Group) scanStruct(realval reflect.Value, sfield *reflect.StructField, h
 			ShortName:        short,
 			LongName:         longname,
 			Default:          def,
-			EnvDefaultKey:    mtag.Get("env"),
+			EnvDefaultKey:    mtag.OptGet("env", longname),
 			EnvDefaultDelim:  mtag.Get("env-delim"),
 			OptionalArgument: optional,
 			OptionalValue:    optionalValue,

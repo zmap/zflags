@@ -124,6 +124,14 @@ func (x *multiTag) Get(key string) string {
 	return ""
 }
 
+// OptGet returns Get(key), unless it is empty, when it returns def
+func (x *multiTag) OptGet(key string, def string) string {
+	if ret := x.Get(key); ret != "" {
+		return ret
+	}
+	return def
+}
+
 func (x *multiTag) GetMany(key string) []string {
 	c := x.cached()
 	return c[key]
