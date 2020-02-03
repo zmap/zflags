@@ -74,8 +74,9 @@ type iniValue struct {
 type iniSection []iniValue
 
 type ini struct {
-	File     string
-	Sections map[string]iniSection
+	File            string
+	Sections        map[string]iniSection
+	OrderedSections []string
 }
 
 // NewIniParser creates a new ini parser for a given Parser.
@@ -385,6 +386,7 @@ func readIni(contents io.Reader, filename string) (*ini, error) {
 	sectionname := ""
 
 	ret.Sections[sectionname] = section
+	ret.OrderedSections = append(ret.OrderedSections, sectionname)
 
 	var lineno uint
 
@@ -435,6 +437,7 @@ func readIni(contents io.Reader, filename string) (*ini, error) {
 			if section == nil {
 				section = make(iniSection, 0, 10)
 				ret.Sections[name] = section
+				ret.OrderedSections = append(ret.OrderedSections, name)
 			}
 
 			continue
@@ -477,6 +480,7 @@ func readIni(contents io.Reader, filename string) (*ini, error) {
 		})
 
 		ret.Sections[sectionname] = section
+		ret.OrderedSections = append(ret.OrderedSections, sectionname)
 	}
 
 	return ret, nil
@@ -509,7 +513,8 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 
 	var modTypes []string
 	var returnFlags []interface{}
-	for name, section := range ini.Sections {
+	for _, name := range ini.OrderedSections {
+		section := ini.Sections[name]
 		name = removeTrailingNonce(name)
 
 		groups := i.matchingGroups(name)
