@@ -480,7 +480,6 @@ func readIni(contents io.Reader, filename string) (*ini, error) {
 		})
 
 		ret.Sections[sectionname] = section
-		ret.OrderedSections = append(ret.OrderedSections, sectionname)
 	}
 
 	return ret, nil
