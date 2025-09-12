@@ -377,8 +377,10 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 			fmt.Fprintln(wr, t)
 		}
 
+		// If the command implements ZCommander, print its help text in between the long description and options
 		if zCmd, ok := cmd.data.(ZCommander); ok {
-			fmt.Fprintf(wr, "\n%s", zCmd.Help())
+			fmt.Fprintln(wr)
+			fmt.Fprintf(wr, "%s", zCmd.Help())
 			fmt.Fprintln(wr)
 		}
 
