@@ -362,10 +362,6 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 				}
 			}
 
-			if zCmd, ok := allcmd.data.(ZCommander); ok {
-				fmt.Fprintf(wr, "\n%s", zCmd.Help())
-			}
-
 			allcmd = allcmd.Active
 		}
 
@@ -380,6 +376,12 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 
 			fmt.Fprintln(wr, t)
 		}
+
+		if zCmd, ok := allcmd.data.(ZCommander); ok {
+			fmt.Fprintf(wr, "\n%s", zCmd.Help())
+			fmt.Fprintln(wr)
+		}
+
 	}
 
 	c := p.Command
