@@ -362,6 +362,10 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 				}
 			}
 
+			if zCmd, ok := allcmd.data.(ZCommander); ok {
+				fmt.Fprintf(wr, "\n%s", zCmd.Help())
+			}
+
 			allcmd = allcmd.Active
 		}
 
