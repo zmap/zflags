@@ -377,7 +377,7 @@ func (p *Parser) WriteHelp(writer io.Writer) {
 			fmt.Fprintln(wr, t)
 		}
 
-		if zCmd, ok := allcmd.data.(ZCommander); ok {
+		if zCmd, ok := cmd.data.(ZCommander); ok {
 			fmt.Fprintf(wr, "\n%s", zCmd.Help())
 			fmt.Fprintln(wr)
 		}
