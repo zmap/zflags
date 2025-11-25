@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -11,9 +12,9 @@ import (
 // when `env` is absent, it attempts to fall back to `long` (and to `json`)
 func TestFallback(t *testing.T) {
 	type Options struct {
-		Int   int            `long:"int" json:"json-int" default:"1"`
-		Time  time.Duration  `json:"time" default:"1m"`
-		Map   map[string]int `json:"map,omitempty" default:"a:1" env-delim:";"`
+		Int   int            `long:"int" json:"json-int" default:"1" env:"Int"`
+		Time  time.Duration  `json:"time" default:"1m" env:"Time"`
+		Map   map[string]int `json:"map,omitempty" default:"a:1" env:"Map" env-delim:";"`
 		Slice []int          `long:"slice" default:"1" default:"2" env:"OVERRIDE_SLICE" env-delim:","`
 	}
 
@@ -27,19 +28,19 @@ func TestFallback(t *testing.T) {
 			msg:  "JSON override",
 			args: []string{},
 			expected: Options{
-				Int: 23,
-				Time: time.Minute * 3,
-				Map: map[string]int{"key1": 1},
-				Slice: []int{3,4,5},
+				Int:   23,
+				Time:  time.Minute * 3,
+				Map:   map[string]int{"key1": 1},
+				Slice: []int{3, 4, 5},
 			},
 			env: map[string]string{
 				// since both `json` and `long` are present, `long` ("int") wins
 				"json-int": "4",
-				"int": "23",
-				"time": "3m",
-				"map": "key1:1",
+				"Int":      "23",
+				"Time":     "3m",
+				"Map":      "key1:1",
 				// since both `env` and `long` are present, `env` ("OVERRIDE_SLICE") wins
-				"slice": "3,2,1",
+				"Slice":          "3,2,1",
 				"OVERRIDE_SLICE": "3,4,5",
 			},
 		},
@@ -63,9 +64,9 @@ func TestFallback(t *testing.T) {
 				Slice: []int{4, 5, 6},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":            "2",
+				"Time":           "2m",
+				"Map":            "a:2;b:3",
 				"OVERRIDE_SLICE": "4,5,6",
 			},
 		},
@@ -75,13 +76,13 @@ func TestFallback(t *testing.T) {
 			expected: Options{
 				Int:   3,
 				Time:  3 * time.Millisecond,
-				Map:   map[string]int{"c": 3,"d":4},
-				Slice: []int{3,1},
+				Map:   map[string]int{"c": 3, "d": 4},
+				Slice: []int{3, 1},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":            "2",
+				"Time":           "2m",
+				"Map":            "a:2;b:3",
 				"OVERRIDE_SLICE": "4,5,6",
 			},
 		},
@@ -95,9 +96,9 @@ func TestFallback(t *testing.T) {
 				Slice: []int{0},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":            "2",
+				"Time":           "2m",
+				"Map":            "a:2;b:3",
 				"OVERRIDE_SLICE": "4,5,6",
 			},
 		},
@@ -111,9 +112,9 @@ func TestFallback(t *testing.T) {
 				Slice: []int{0},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":   "2",
+				"Time":  "2m",
+				"Map":   "a:2;b:3",
 				"Slice": "4,5,6",
 			},
 		},
@@ -126,9 +127,12 @@ func TestFallback(t *testing.T) {
 		var opts Options
 		oldEnv.Restore()
 		for envKey, envValue := range test.env {
-			os.Setenv(envKey, envValue)
+			err := os.Setenv(envKey, envValue)
+			if err != nil {
+				t.Fatal(fmt.Errorf("error setting env var (%s): %s", envKey, err))
+			}
 		}
-		_, _, _, err := NewParser(&opts, Default | EnvironmentFallback).ParseCommandLine(test.args)
+		_, _, _, err := NewParser(&opts, Default|EnvironmentFallback).ParseCommandLine(test.args)
 		if err != nil {
 			t.Fatalf("%s:\nUnexpected error: %v", test.msg, err)
 		}
@@ -163,17 +167,17 @@ func TestNoFallback(t *testing.T) {
 			msg:  "JSON override",
 			args: []string{},
 			expected: Options{
-				Int: 1,
-				Time: time.Minute * 1,
-				Map: map[string]int{"a": 1},
-				Slice: []int{3,4,5},
+				Int:   1,
+				Time:  time.Minute * 1,
+				Map:   map[string]int{"a": 1},
+				Slice: []int{3, 4, 5},
 			},
 			env: map[string]string{
-				"json-int": "4",
-				"int": "23",
-				"time": "3m",
-				"map": "key1:1",
-				"slice": "3,2,1",
+				"json-int":       "4",
+				"int":            "23",
+				"time":           "3m",
+				"map":            "key1:1",
+				"slice":          "3,2,1",
 				"OVERRIDE_SLICE": "3,4,5",
 			},
 		},
@@ -197,9 +201,9 @@ func TestNoFallback(t *testing.T) {
 				Slice: []int{4, 5, 6},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":            "2",
+				"Time":           "2m",
+				"Map":            "a:2;b:3",
 				"OVERRIDE_SLICE": "4,5,6",
 			},
 		},
@@ -209,13 +213,13 @@ func TestNoFallback(t *testing.T) {
 			expected: Options{
 				Int:   3,
 				Time:  3 * time.Millisecond,
-				Map:   map[string]int{"c": 3,"d":4},
-				Slice: []int{3,1},
+				Map:   map[string]int{"c": 3, "d": 4},
+				Slice: []int{3, 1},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":            "2",
+				"Time":           "2m",
+				"Map":            "a:2;b:3",
 				"OVERRIDE_SLICE": "4,5,6",
 			},
 		},
@@ -229,9 +233,9 @@ func TestNoFallback(t *testing.T) {
 				Slice: []int{0},
 			},
 			env: map[string]string{
-				"Int": "2",
-				"Time": "2m",
-				"Map": "a:2;b:3",
+				"Int":            "2",
+				"Time":           "2m",
+				"Map":            "a:2;b:3",
 				"OVERRIDE_SLICE": "4,5,6",
 			},
 		},
@@ -246,7 +250,7 @@ func TestNoFallback(t *testing.T) {
 		for envKey, envValue := range test.env {
 			os.Setenv(envKey, envValue)
 		}
-		_, _, _, err := NewParser(&opts, Default & (^EnvironmentFallback)).ParseCommandLine(test.args)
+		_, _, _, err := NewParser(&opts, Default&(^EnvironmentFallback)).ParseCommandLine(test.args)
 		if err != nil {
 			t.Fatalf("%s:\nUnexpected error: %v", test.msg, err)
 		}
