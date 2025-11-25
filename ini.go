@@ -647,13 +647,7 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 	// Validate the options after all default settings set
 
 	if !i.NoValidateAfterParsing {
-		p.eachCommand(func(c *Command) {
-			if cmd, ok := c.data.(ZCommander); ok {
-				if err := cmd.Validate([]string{}); err != nil { //validate
-					log.Fatal(err)
-				}
-			}
-		}, true)
+		i.ValidateZCommanders()
 	}
 
 	// TODO: checkRequired?
