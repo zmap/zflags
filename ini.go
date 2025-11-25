@@ -628,13 +628,16 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 	})
 	// Validate the options after all default settings set
 
-	p.eachCommand(func(c *Command) {
-		if cmd, ok := c.data.(ZCommander); ok {
-			if err := cmd.Validate([]string{}); err != nil { //validate
-				log.Fatal(err)
+	if !i.parser.NoValidateAfterParsing {
+		p.eachCommand(func(c *Command) {
+			if cmd, ok := c.data.(ZCommander); ok {
+				if err := cmd.Validate([]string{}); err != nil { //validate
+					log.Fatal(err)
+				}
 			}
-		}
-	}, true)
+		}, true)
+	}
+
 	// TODO: checkRequired?
 
 	for opt, quoted := range quotesLookup {

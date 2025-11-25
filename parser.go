@@ -7,6 +7,7 @@ package flags
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -51,6 +52,11 @@ type Parser struct {
 	// The command passed into CommandHandler may be nil in case there is no
 	// command to be Validated when parsing has finished.
 	CommandHandler func(command Commander, args []string) error
+
+	// NotifyValidateAfterParsing indidcates whether we should Validate any ZCommander fulfilling
+	// commands after parsing has completed.
+	// If true, the caller is responsible for calling the separate Validate method.
+	NoValidateAfterParsing bool
 
 	internalError error
 }
@@ -181,6 +187,19 @@ func NewNamedParser(appname string, options Options) *Parser {
 	p.Command.parent = p
 
 	return p
+}
+
+// ValidateZCommanders validates all commands in the parser that
+// implement the ZCommander interface. If any validation fails, the
+// program will log.Fatal with the error.
+func (p *Parser) ValidateZCommanders() {
+	p.eachCommand(func(c *Command) {
+		if zcmd, ok := c.data.(ZCommander); ok {
+			if err := zcmd.Validate([]string{}); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}, true)
 }
 
 // Parse parses the command line arguments from os.Args using Parser.ParseArgs.
