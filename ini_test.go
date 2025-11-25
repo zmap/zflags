@@ -345,13 +345,14 @@ ns1.opt8=true
 
 func TestReadIni(t *testing.T) {
 	var opts helpOptions
-
-	p := NewNamedParser("TestIni", Default)
-	p.AddGroup("Application Options", "The application options", &opts)
-
-	inip := NewIniParser(p)
-
-	inic := `
+	tests := []struct {
+		name                      string
+		ini                       string
+		expectedValueOfDefaultOpt string
+	}{
+		{
+			"Single Application Options section",
+			`
 ; Show verbose debug information
 verbose = true
 verbose = true
@@ -378,49 +379,10 @@ StringSlice = another value
 int-map = a:2
 int-map = b:3
 
-`
-
-	b := strings.NewReader(inic)
-	_, _, err := inip.Parse(b)
-
-	if err != nil {
-		t.Fatalf("Unexpected error: %s", err)
-	}
-
-	assertBoolArray(t, opts.Verbose, []bool{true, true})
-
-	if v := map[string]string{"another": "value\n1", "some": "value 2"}; !reflect.DeepEqual(opts.DefaultMap, v) {
-		t.Fatalf("Expected %#v for DefaultMap but got %#v", v, opts.DefaultMap)
-	}
-
-	assertString(t, opts.Default, "New\nvalue")
-
-	assertString(t, opts.EnvDefault1, "New value")
-
-	assertStringArray(t, opts.Other.StringSlice, []string{"some\nvalue", "another value"})
-
-	if v, ok := opts.Other.IntMap["a"]; !ok {
-		t.Errorf("Expected \"a\" in Other.IntMap")
-	} else if v != 2 {
-		t.Errorf("Expected Other.IntMap[\"a\"] = 2, but got %v", v)
-	}
-
-	if v, ok := opts.Other.IntMap["b"]; !ok {
-		t.Errorf("Expected \"b\" in Other.IntMap")
-	} else if v != 3 {
-		t.Errorf("Expected Other.IntMap[\"b\"] = 3, but got %v", v)
-	}
-}
-
-func TestReadIniMultipleSections(t *testing.T) {
-	var opts helpOptions
-
-	p := NewNamedParser("TestIni", Default)
-	p.AddGroup("Application Options", "The application options", &opts)
-
-	inip := NewIniParser(p)
-
-	inic := `
+`, "New\nvalue",
+		}, {
+			"Multiple Application Options sections",
+			`
 ; Show verbose debug information
 verbose = true
 verbose = true
@@ -432,9 +394,7 @@ DefaultMap = some:value 2
 ; A slice of pointers to string
 ; PtrSlice =
 
-; Test default value
-;;;;;;;;;;Default = "New\nvalue"
-
+ ;Second Application Options Section
 [Application Options]
 ; Test env-default1 value
 EnvDefault1 = New value
@@ -448,37 +408,46 @@ StringSlice = another value
 int-map = a:2
 int-map = b:3
 
-`
-
-	b := strings.NewReader(inic)
-	_, _, err := inip.Parse(b)
-
-	if err != nil {
-		t.Fatalf("Unexpected error: %s", err)
+`, "Some\nvalue",
+		},
 	}
 
-	assertBoolArray(t, opts.Verbose, []bool{true, true})
+	for _, test := range tests {
+		p := NewNamedParser("TestIni", Default)
+		p.AddGroup("Application Options", "The application options", &opts)
 
-	if v := map[string]string{"another": "value\n1", "some": "value 2"}; !reflect.DeepEqual(opts.DefaultMap, v) {
-		t.Fatalf("Expected %#v for DefaultMap but got %#v", v, opts.DefaultMap)
-	}
+		inip := NewIniParser(p)
 
-	assertString(t, opts.Default, "Some\nvalue")
+		b := strings.NewReader(test.ini)
+		_, _, err := inip.Parse(b)
 
-	assertString(t, opts.EnvDefault1, "New value")
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
 
-	assertStringArray(t, opts.Other.StringSlice, []string{"some\nvalue", "another value"})
+		assertBoolArray(t, opts.Verbose, []bool{true, true})
 
-	if v, ok := opts.Other.IntMap["a"]; !ok {
-		t.Errorf("Expected \"a\" in Other.IntMap")
-	} else if v != 2 {
-		t.Errorf("Expected Other.IntMap[\"a\"] = 2, but got %v", v)
-	}
+		if v := map[string]string{"another": "value\n1", "some": "value 2"}; !reflect.DeepEqual(opts.DefaultMap, v) {
+			t.Fatalf("Expected %#v for DefaultMap but got %#v", v, opts.DefaultMap)
+		}
 
-	if v, ok := opts.Other.IntMap["b"]; !ok {
-		t.Errorf("Expected \"b\" in Other.IntMap")
-	} else if v != 3 {
-		t.Errorf("Expected Other.IntMap[\"b\"] = 3, but got %v", v)
+		assertString(t, opts.Default, test.expectedValueOfDefaultOpt)
+
+		assertString(t, opts.EnvDefault1, "New value")
+
+		assertStringArray(t, opts.Other.StringSlice, []string{"some\nvalue", "another value"})
+
+		if v, ok := opts.Other.IntMap["a"]; !ok {
+			t.Errorf("Expected \"a\" in Other.IntMap")
+		} else if v != 2 {
+			t.Errorf("Expected Other.IntMap[\"a\"] = 2, but got %v", v)
+		}
+
+		if v, ok := opts.Other.IntMap["b"]; !ok {
+			t.Errorf("Expected \"b\" in Other.IntMap")
+		} else if v != 3 {
+			t.Errorf("Expected Other.IntMap[\"b\"] = 3, but got %v", v)
+		}
 	}
 }
 
