@@ -7,7 +7,6 @@ package flags
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"sort"
@@ -187,19 +186,6 @@ func NewNamedParser(appname string, options Options) *Parser {
 	p.Command.parent = p
 
 	return p
-}
-
-// ValidateZCommanders validates all commands in the parser that
-// implement the ZCommander interface. If any validation fails, the
-// program will log.Fatal with the error.
-func (p *Parser) ValidateZCommanders() {
-	p.eachCommand(func(c *Command) {
-		if zcmd, ok := c.data.(ZCommander); ok {
-			if err := zcmd.Validate([]string{}); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}, true)
 }
 
 // Parse parses the command line arguments from os.Args using Parser.ParseArgs.

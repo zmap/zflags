@@ -159,6 +159,19 @@ func (i *IniParser) Write(writer io.Writer, options IniOptions) {
 	writeIni(i, writer, options)
 }
 
+// ValidateZCommanders validates all commands in the parser that
+// implement the ZCommander interface. If any validation fails, the
+// program will log.Fatal with the error.
+func (i *IniParser) ValidateZCommanders() {
+	i.parser.eachCommand(func(c *Command) {
+		if zcmd, ok := c.data.(ZCommander); ok {
+			if err := zcmd.Validate([]string{}); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}, true)
+}
+
 func readFullLine(reader *bufio.Reader) (string, error) {
 	var line []byte
 
