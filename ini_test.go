@@ -451,6 +451,85 @@ int-map = b:3
 	}
 }
 
+type testCmd struct{}
+type testCmdFlags struct {
+	Senders     int    `long:"senders" description:"Number of parallel senders" default:"10"`
+	Destination string `long:"destination" description:"Destination address to send messages" default:"localhost:8080"`
+	SrcPort     uint   `long:"source-port" description:"Source port for msgs" default:"24"`
+}
+
+func (opt *testCmdFlags) Validate(_ []string) error {
+	// Ensures default was used
+	if opt.Senders <= 0 {
+		return fmt.Errorf("senders must be positive")
+	}
+	if len(opt.Destination) == 0 {
+		return fmt.Errorf("destination must be specified")
+	}
+	if opt.SrcPort == 0 {
+		return fmt.Errorf("source port must be specified")
+	}
+	return nil
+}
+func (opt *testCmdFlags) Help() string {
+	return "Help for testCmdFlags"
+}
+func (opt *testCmd) NewFlags() any {
+	return new(testCmdFlags)
+}
+func TestZCommanderIni(t *testing.T) {
+	type applicationOptions struct {
+		Verbose []bool `long:"verbose" description:"Show verbose debug information"`
+	}
+	var appOpts applicationOptions
+	var module testCmd
+
+	p := NewNamedParser("TestIni", Default)
+	p.AddGroup("Application Options", "The application options", &appOpts)
+	p.AddCommand("scan", "scan module", "A mock scanner module", &module)
+
+	inip := NewIniParser(p)
+
+	inic := `
+; Show verbose debug information
+[Application Options]
+verbose = true
+verbose = true
+
+
+[scan]
+senders = 20
+destination = example.com:9090
+
+`
+	b := strings.NewReader(inic)
+	registeredCmds, registeredFlags, err := inip.Parse(b)
+
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	assertBoolArray(t, appOpts.Verbose, []bool{true, true})
+	if registeredCmds[0] != "scan" {
+		t.Fatalf("Expected registered command = scan, but got %s", registeredCmds[0])
+	}
+	flags, ok := registeredFlags[0].(*testCmdFlags)
+	if !ok {
+		t.Fatalf("Expected registered flags to be of type *testCmdFlags")
+	}
+	if flags.Senders != 20 {
+		t.Fatalf("Expected senders = 20, but got %d", flags.Senders)
+	}
+	if flags.Destination != "example.com:9090" {
+		t.Fatalf("Expected destination = example.com:9090, but got %s", flags.Destination)
+	}
+
+	// We didn't set this, so just checking that default was preserved
+	if flags.SrcPort != 24 {
+		t.Fatalf("Expected source-port = 24, but got %d", flags.SrcPort)
+	}
+}
+
 func TestReadAndWriteIni(t *testing.T) {
 	var tests = []struct {
 		options IniOptions

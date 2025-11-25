@@ -605,10 +605,7 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 		if name != "" && name != "Application Options" {
 			c := i.parser.Find(name)
 			if c != nil {
-				if cmd, ok := c.data.(ZCommander); ok {
-					if err := cmd.Validate([]string{}); err != nil { //validate
-						log.Fatal(err)
-					}
+				if _, ok := c.data.(ZCommander); ok {
 					modTypes = append(modTypes, name)
 					returnFlags = append(returnFlags, c.data)
 					par, _ := c.parent.(*Command)
@@ -629,6 +626,15 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 
 		option.clearDefault()
 	})
+	// Validate the options after all default settings set
+
+	p.eachCommand(func(c *Command) {
+		if cmd, ok := c.data.(ZCommander); ok {
+			if err := cmd.Validate([]string{}); err != nil { //validate
+				log.Fatal(err)
+			}
+		}
+	}, true)
 	// TODO: checkRequired?
 
 	for opt, quoted := range quotesLookup {
