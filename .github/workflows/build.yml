@@ -34,3 +34,6 @@ jobs:
       - name: Test
         run: |
           go test .
+      - name: Lint
+        run: |
+          go vet .
