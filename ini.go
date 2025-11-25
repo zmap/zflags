@@ -61,6 +61,11 @@ const (
 type IniParser struct {
 	ParseAsDefaults bool // override default flags
 
+	// NotifyValidateAfterParsing indidcates whether we should Validate any ZCommander fulfilling
+	// commands after parsing has completed.
+	// If true, the caller is responsible for calling the separate Validate method.
+	NoValidateAfterParsing bool
+
 	parser *Parser
 }
 
@@ -641,7 +646,7 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 	})
 	// Validate the options after all default settings set
 
-	if !i.parser.NoValidateAfterParsing {
+	if !i.NoValidateAfterParsing {
 		p.eachCommand(func(c *Command) {
 			if cmd, ok := c.data.(ZCommander); ok {
 				if err := cmd.Validate([]string{}); err != nil { //validate

@@ -52,11 +52,6 @@ type Parser struct {
 	// command to be Validated when parsing has finished.
 	CommandHandler func(command Commander, args []string) error
 
-	// NotifyValidateAfterParsing indidcates whether we should Validate any ZCommander fulfilling
-	// commands after parsing has completed.
-	// If true, the caller is responsible for calling the separate Validate method.
-	NoValidateAfterParsing bool
-
 	internalError error
 }
 
