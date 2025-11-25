@@ -433,9 +433,6 @@ DefaultArray = 1
 DefaultArray = "2"
 DefaultArray = 3
 
-; Testdefault map value
-; DefaultMap =
-
 ; Test env-default1 value
 EnvDefault1 = env-def
 
@@ -443,9 +440,6 @@ EnvDefault1 = env-def
 EnvDefault2 = env-def
 
 [Other Options]
-; A slice of strings
-; StringSlice =
-
 ; A map from string to int
 int-map = a:2
 int-map = b:"3"
@@ -464,9 +458,6 @@ DefaultArray = 1
 DefaultArray = 2
 DefaultArray = 3
 
-; Testdefault map value
-; DefaultMap =
-
 ; Test env-default1 value
 EnvDefault1 = env-def
 
@@ -474,9 +465,6 @@ EnvDefault1 = env-def
 EnvDefault2 = env-def
 
 [Other Options]
-; A slice of strings
-; StringSlice =
-
 ; A map from string to int
 int-map = a:2
 int-map = b:3
@@ -529,9 +517,6 @@ DefaultArray = "1"
 DefaultArray = "2"
 DefaultArray = "3"
 
-; Testdefault map value
-; DefaultMap =
-
 ; Test env-default1 value
 EnvDefault1 = env-def
 
@@ -539,9 +524,6 @@ EnvDefault1 = env-def
 EnvDefault2 = env-def
 
 [Other Options]
-; A slice of strings
-; StringSlice =
-
 ; A map from string to int
 int-map = a:"2"
 int-map = b:"3"
