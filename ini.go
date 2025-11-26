@@ -61,6 +61,11 @@ const (
 type IniParser struct {
 	ParseAsDefaults bool // override default flags
 
+	// NotifyValidateAfterParsing indidcates whether we should Validate any ZCommander fulfilling
+	// commands after parsing has completed.
+	// If true, the caller is responsible for calling the separate Validate method.
+	NoValidateAfterParsing bool
+
 	parser *Parser
 }
 
@@ -157,6 +162,19 @@ func (i *IniParser) WriteFile(filename string, options IniOptions) error {
 // IniIncludeDefaults is _not_ set in options).
 func (i *IniParser) Write(writer io.Writer, options IniOptions) {
 	writeIni(i, writer, options)
+}
+
+// ValidateZCommanders validates all commands in the parser that
+// implement the ZCommander interface. If any validation fails, the
+// program will log.Fatal with the error.
+func (i *IniParser) ValidateZCommanders() {
+	i.parser.eachCommand(func(c *Command) {
+		if zcmd, ok := c.data.(ZCommander); ok {
+			if err := zcmd.Validate([]string{}); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}, true)
 }
 
 func readFullLine(reader *bufio.Reader) (string, error) {
@@ -628,13 +646,10 @@ func (i *IniParser) parse(ini *ini) ([]string, []interface{}, error) {
 	})
 	// Validate the options after all default settings set
 
-	p.eachCommand(func(c *Command) {
-		if cmd, ok := c.data.(ZCommander); ok {
-			if err := cmd.Validate([]string{}); err != nil { //validate
-				log.Fatal(err)
-			}
-		}
-	}, true)
+	if !i.NoValidateAfterParsing {
+		i.ValidateZCommanders()
+	}
+
 	// TODO: checkRequired?
 
 	for opt, quoted := range quotesLookup {
